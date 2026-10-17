@@ -33,12 +33,6 @@ export function workoutFromPast(past: Workout, defaultRest: number): Workout {
   };
 }
 
-export function emptyWorkout(): Workout {
-  const hour = new Date().getHours();
-  const name = hour < 12 ? 'Jutarnji trening' : hour < 18 ? 'Popodnevni trening' : 'Večernji trening';
-  return { id: newId(), name, startedAt: new Date().toISOString(), exercises: [] };
-}
-
 export function useExercises() {
   const { state } = useStore();
   return useMemo(() => {

@@ -110,6 +110,19 @@ export default function WorkoutScreen() {
     ]);
   };
 
+  /** Removes the last set, asking first if it was already logged. */
+  const removeLastSet = (i: number) => {
+    const sets = w.exercises[i].sets;
+    const last = sets.length - 1;
+    if (last < 0) return;
+    const remove = () => setExercise(i, (cur) => ({ ...cur, sets: cur.sets.slice(0, -1) }));
+    if (!sets[last].done) return remove();
+    Alert.alert('Ukloniti odrađenu seriju?', `Serija ${last + 1} je već označena kao odrađena.`, [
+      { text: 'Odustani', style: 'cancel' },
+      { text: 'Ukloni', style: 'destructive', onPress: remove },
+    ]);
+  };
+
   const exerciseMenu = (i: number) => {
     const e = w.exercises[i];
     Alert.alert(ex.name(e.exerciseId), undefined, [
@@ -266,12 +279,21 @@ export default function WorkoutScreen() {
                     />
                   );
                 })}
-                <Button
-                  title="+ Dodaj seriju"
-                  variant="secondary"
-                  style={{ paddingVertical: 8 }}
-                  onPress={() => setExercise(i, (cur) => ({ ...cur, sets: [...cur.sets, emptySet()] }))}
-                />
+                <Row>
+                  <Button
+                    title="− Ukloni seriju"
+                    variant="secondary"
+                    style={{ flex: 1, paddingVertical: 8 }}
+                    disabled={e.sets.length === 0}
+                    onPress={() => removeLastSet(i)}
+                  />
+                  <Button
+                    title="+ Dodaj seriju"
+                    variant="secondary"
+                    style={{ flex: 1, paddingVertical: 8 }}
+                    onPress={() => setExercise(i, (cur) => ({ ...cur, sets: [...cur.sets, emptySet()] }))}
+                  />
+                </Row>
               </Card>
             );
           })}

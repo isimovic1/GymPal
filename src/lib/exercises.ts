@@ -120,15 +120,3 @@ export function exerciseIndex(custom: Exercise[]): Map<string, Exercise> {
   for (const e of custom) map.set(e.id, e);
   return map;
 }
-
-/** Ready-made routines for a beginner training full body three times a week. */
-export const STARTER_ROUTINES: { name: string; exercises: string[] }[] = [
-  {
-    name: 'Full Body A',
-    exercises: ['Barbell_Squat', 'Barbell_Bench_Press_-_Medium_Grip', 'Bent_Over_Barbell_Row', 'Dumbbell_Shoulder_Press', 'Barbell_Curl', 'Plank'],
-  },
-  {
-    name: 'Full Body B',
-    exercises: ['Romanian_Deadlift', 'Incline_Dumbbell_Press', 'Wide-Grip_Lat_Pulldown', 'Leg_Press', 'Triceps_Pushdown', 'Hanging_Leg_Raise'],
-  },
-];

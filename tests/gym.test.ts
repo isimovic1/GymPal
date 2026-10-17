@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 
-import { BUILTIN_EXERCISES, matchesSearch, STARTER_ROUTINES } from '../src/lib/exercises';
+import { BUILTIN_EXERCISES, matchesSearch } from '../src/lib/exercises';
 import {
   e1rm, exerciseHistory, exerciseRecords, findPRs, formatDuration, previousSets, setsPerMuscle, weeklyStats,
   weekStreak, workoutSetCount, workoutVolume,
@@ -23,10 +23,9 @@ const w2 = workout('w2', '2026-10-13T17:00:00.000Z', [set(62.5, 8), set(62.5, 8)
 // Newest first, as stored.
 const history = [w2, w1];
 
-test('bundled database has the exercises the starter routines use', () => {
+test('bundled exercise database is complete', () => {
   assert.ok(BUILTIN_EXERCISES.length > 800);
-  const ids = new Set(BUILTIN_EXERCISES.map((e) => e.id));
-  for (const r of STARTER_ROUTINES) for (const id of r.exercises) assert.ok(ids.has(id), id);
+  assert.equal(new Set(BUILTIN_EXERCISES.map((e) => e.id)).size, BUILTIN_EXERCISES.length);
 });
 
 test('search understands Croatian words and muscle names', () => {

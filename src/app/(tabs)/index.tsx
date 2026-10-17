@@ -4,15 +4,14 @@ import { useEffect, useState } from 'react';
 import { Alert, Pressable, Text, View } from 'react-native';
 
 import { Button, Card, Row, Screen, styles } from '../../components/ui';
-import { STARTER_ROUTINES } from '../../lib/exercises';
 import { durationMs, formatDuration } from '../../lib/stats';
-import { newId, useStore } from '../../lib/store';
+import { useStore } from '../../lib/store';
 import type { Routine, Workout } from '../../lib/types';
-import { emptyWorkout, useExercises, workoutFromRoutine } from '../../lib/workout';
+import { useExercises, workoutFromRoutine } from '../../lib/workout';
 import { colors, spacing } from '../../theme';
 
 export default function Home() {
-  const { state, setActive, saveRoutine, deleteRoutine } = useStore();
+  const { state, setActive, deleteRoutine } = useStore();
   const ex = useExercises();
   const active = state.active;
 
@@ -27,21 +26,6 @@ export default function Home() {
       { text: 'Odbaci i započni novi', style: 'destructive', onPress: go },
       { text: 'Odustani', style: 'cancel' },
     ]);
-  };
-
-  const addStarters = () => {
-    for (const r of STARTER_ROUTINES) {
-      saveRoutine({
-        id: newId(),
-        name: r.name,
-        createdAt: new Date().toISOString(),
-        exercises: r.exercises.filter((id) => ex.get(id)).map((exerciseId) => ({
-          exerciseId,
-          sets: 3,
-          restSec: state.settings.defaultRestSec,
-        })),
-      });
-    }
   };
 
   const routineMenu = (r: Routine) =>
@@ -63,9 +47,7 @@ export default function Home() {
     <Screen>
       {active && <ActiveBanner workout={active} />}
 
-      <Button title="+ Započni prazan trening" onPress={() => start(emptyWorkout())} />
-
-      <Row style={{ justifyContent: 'space-between', marginTop: spacing.sm }}>
+      <Row style={{ justifyContent: 'space-between' }}>
         <Text style={{ fontSize: 20, fontWeight: '800', color: colors.text }}>Moje rutine</Text>
         <Pressable onPress={() => router.push('/routine-edit')} hitSlop={10}>
           <Row style={{ gap: 4 }}>
@@ -79,9 +61,10 @@ export default function Home() {
         <Card>
           <Text style={styles.text}>Još nemaš rutina.</Text>
           <Text style={styles.muted}>
-            Napravi svoju ili dodaj dvije gotove full body rutine (A i B) za 3 treninga tjedno: naizmjenično A, B, A…
+            Napravi rutinu (npr. Push, Pull, Noge ili Full Body) i dodaj u nju vježbe koje želiš. Kad je pokreneš,
+            aplikacija prati vrijeme, kilaže i ponavljanja.
           </Text>
-          <Button title="Dodaj Full Body A i B" variant="secondary" onPress={addStarters} />
+          <Button title="+ Nova rutina" variant="secondary" onPress={() => router.push('/routine-edit')} />
         </Card>
       )}
 
