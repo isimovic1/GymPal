@@ -8,7 +8,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import { ExerciseThumb } from '../components/ExerciseItem';
 import { SetHeader, SetRow } from '../components/SetRow';
-import { Button, Card, Row, styles } from '../components/ui';
+import { Button, Card, KeyboardAware, Row, styles } from '../components/ui';
 import { durationMs, e1rm, exerciseRecords, formatDuration, previousSets, workoutSetCount, workoutVolume } from '../lib/stats';
 import { useStore } from '../lib/store';
 import type { SetEntry, Workout, WorkoutExercise } from '../lib/types';
@@ -203,84 +203,86 @@ export default function WorkoutScreen() {
           ),
         }}
       />
-      <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: 160 }} keyboardShouldPersistTaps="handled">
-        <View style={{ gap: 4 }}>
-          <TextInput
-            value={w.name}
-            onChangeText={(name) => update((cur) => ({ ...cur, name }))}
-            style={{ fontSize: 22, fontWeight: '800', color: colors.text, padding: 0 }}
-          />
-          <Row style={{ gap: spacing.lg }}>
-            <Stat label="Trajanje" value={formatDuration(durationMs(w, now))} color={colors.primary} />
-            <Stat label="Volumen" value={`${Math.round(workoutVolume(w))} kg`} />
-            <Stat label="Serije" value={String(workoutSetCount(w))} />
-          </Row>
-        </View>
-
-        {w.exercises.length === 0 && (
-          <Card>
-            <Text style={styles.muted}>Dodaj prvu vježbu i kreni.</Text>
-          </Card>
-        )}
-
-        {w.exercises.map((e, i) => {
-          const prev = previousSets(state.workouts, e.exerciseId) ?? [];
-          let working = 0;
-          return (
-            <Card key={`${e.exerciseId}-${i}`}>
-              <Row>
-                <ExerciseThumb exercise={ex.get(e.exerciseId)} size={40} />
-                <Pressable style={{ flex: 1 }} onPress={() => router.push({ pathname: '/exercise', params: { id: e.exerciseId } })}>
-                  <Text style={{ fontSize: 16, fontWeight: '700', color: colors.primary }} numberOfLines={2}>
-                    {ex.name(e.exerciseId)}
-                  </Text>
-                </Pressable>
-                <Pressable onPress={() => exerciseMenu(i)} hitSlop={10}>
-                  <Ionicons name="ellipsis-horizontal" size={22} color={colors.muted} />
-                </Pressable>
-              </Row>
-              <Pressable onPress={() => setExercise(i, (cur) => ({ ...cur, restSec: nextRest(cur.restSec) }))}>
-                <Row style={{ gap: 4 }}>
-                  <Ionicons name="timer-outline" size={15} color={colors.primary} />
-                  <Text style={{ color: colors.primary, fontSize: 13 }}>Odmor: {restLabel(e.restSec)}</Text>
-                </Row>
-              </Pressable>
-              <SetHeader />
-              {e.sets.map((s, si) => {
-                const label = s.warmup ? 'W' : String(++working);
-                const best = bestBefore.get(e.exerciseId) ?? 0;
-                const isPr = best > 0 && !s.warmup && e1rm(s.weight ?? 0, s.reps ?? 0) > best;
-                return (
-                  <SetRow
-                    key={`${s.id}-${s.done}`}
-                    set={s}
-                    label={label}
-                    previous={prev[si]}
-                    isPr={isPr}
-                    onChange={(patch) =>
-                      setExercise(i, (cur) => ({ ...cur, sets: cur.sets.map((x, j) => (j === si ? { ...x, ...patch } : x)) }))
-                    }
-                    onToggleDone={() => toggleDone(i, si, prev[si])}
-                    onMenu={() => setMenu(i, si)}
-                  />
-                );
-              })}
-              <Button
-                title="+ Dodaj seriju"
-                variant="secondary"
-                style={{ paddingVertical: 8 }}
-                onPress={() => setExercise(i, (cur) => ({ ...cur, sets: [...cur.sets, emptySet()] }))}
-              />
+      <KeyboardAware>
+        <ScrollView contentContainerStyle={{ padding: spacing.lg, gap: spacing.md, paddingBottom: 160 }} keyboardShouldPersistTaps="handled">
+          <View style={{ gap: 4 }}>
+            <TextInput
+              value={w.name}
+              onChangeText={(name) => update((cur) => ({ ...cur, name }))}
+              style={{ fontSize: 22, fontWeight: '800', color: colors.text, padding: 0 }}
+            />
+            <Row style={{ gap: spacing.lg }}>
+              <Stat label="Trajanje" value={formatDuration(durationMs(w, now))} color={colors.primary} />
+              <Stat label="Volumen" value={`${Math.round(workoutVolume(w))} kg`} />
+              <Stat label="Serije" value={String(workoutSetCount(w))} />
+            </Row>
+          </View>
+  
+          {w.exercises.length === 0 && (
+            <Card>
+              <Text style={styles.muted}>Dodaj prvu vježbu i kreni.</Text>
             </Card>
-          );
-        })}
-
-        <Button title="+ Dodaj vježbu" onPress={() => router.push('/exercise-picker')} />
-        <Button title="Odbaci trening" variant="ghost" onPress={discard} style={{ marginTop: spacing.sm }} />
-        <Text style={[styles.muted, { fontSize: 12, textAlign: 'center' }]}>
-          Dodir na broj serije: zagrijavanje / brisanje. Dodir na "prethodno" kopira prošli rezultat.
-        </Text>
-      </ScrollView>
+          )}
+  
+          {w.exercises.map((e, i) => {
+            const prev = previousSets(state.workouts, e.exerciseId) ?? [];
+            let working = 0;
+            return (
+              <Card key={`${e.exerciseId}-${i}`}>
+                <Row>
+                  <ExerciseThumb exercise={ex.get(e.exerciseId)} size={40} />
+                  <Pressable style={{ flex: 1 }} onPress={() => router.push({ pathname: '/exercise', params: { id: e.exerciseId } })}>
+                    <Text style={{ fontSize: 16, fontWeight: '700', color: colors.primary }} numberOfLines={2}>
+                      {ex.name(e.exerciseId)}
+                    </Text>
+                  </Pressable>
+                  <Pressable onPress={() => exerciseMenu(i)} hitSlop={10}>
+                    <Ionicons name="ellipsis-horizontal" size={22} color={colors.muted} />
+                  </Pressable>
+                </Row>
+                <Pressable onPress={() => setExercise(i, (cur) => ({ ...cur, restSec: nextRest(cur.restSec) }))}>
+                  <Row style={{ gap: 4 }}>
+                    <Ionicons name="timer-outline" size={15} color={colors.primary} />
+                    <Text style={{ color: colors.primary, fontSize: 13 }}>Odmor: {restLabel(e.restSec)}</Text>
+                  </Row>
+                </Pressable>
+                <SetHeader />
+                {e.sets.map((s, si) => {
+                  const label = s.warmup ? 'W' : String(++working);
+                  const best = bestBefore.get(e.exerciseId) ?? 0;
+                  const isPr = best > 0 && !s.warmup && e1rm(s.weight ?? 0, s.reps ?? 0) > best;
+                  return (
+                    <SetRow
+                      key={`${s.id}-${s.done}`}
+                      set={s}
+                      label={label}
+                      previous={prev[si]}
+                      isPr={isPr}
+                      onChange={(patch) =>
+                        setExercise(i, (cur) => ({ ...cur, sets: cur.sets.map((x, j) => (j === si ? { ...x, ...patch } : x)) }))
+                      }
+                      onToggleDone={() => toggleDone(i, si, prev[si])}
+                      onMenu={() => setMenu(i, si)}
+                    />
+                  );
+                })}
+                <Button
+                  title="+ Dodaj seriju"
+                  variant="secondary"
+                  style={{ paddingVertical: 8 }}
+                  onPress={() => setExercise(i, (cur) => ({ ...cur, sets: [...cur.sets, emptySet()] }))}
+                />
+              </Card>
+            );
+          })}
+  
+          <Button title="+ Dodaj vježbu" onPress={() => router.push('/exercise-picker')} />
+          <Button title="Odbaci trening" variant="ghost" onPress={discard} style={{ marginTop: spacing.sm }} />
+          <Text style={[styles.muted, { fontSize: 12, textAlign: 'center' }]}>
+            Dodir na broj serije: zagrijavanje / brisanje. Dodir na "prethodno" kopira prošli rezultat.
+          </Text>
+        </ScrollView>
+      </KeyboardAware>
 
       {rest && <RestBar rest={rest} now={now} onChange={setRest} />}
     </SafeAreaView>
